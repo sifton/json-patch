@@ -21,11 +21,18 @@ package com.github.fge.jsonpatch;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
 import com.google.common.collect.Iterables;
+
+import java.io.IOException;
 
 /**
  * JSON Patch {@code replace} operation
@@ -39,11 +46,16 @@ import com.google.common.collect.Iterables;
 public final class ReplaceOperation
     extends PathValueOperation
 {
+    @JsonSerialize
+    private final JsonNode oldValue;
+
     @JsonCreator
     public ReplaceOperation(@JsonProperty("path") final JsonPointer path,
-        @JsonProperty("value") final JsonNode value)
+                            @JsonProperty("value") final JsonNode value,
+                            @JsonProperty("oldValue") final JsonNode oldValue)
     {
         super("replace", path, value);
+        this.oldValue = oldValue;
     }
 
     @Override
@@ -77,5 +89,26 @@ public final class ReplaceOperation
         else
             ((ArrayNode) parent).set(Integer.parseInt(rawToken), replacement);
         return ret;
+    }
+
+    @Override
+    public final void serialize(final JsonGenerator jgen,
+                                final SerializerProvider provider)
+            throws IOException, JsonProcessingException {
+        jgen.writeStartObject();
+        jgen.writeStringField("op", op);
+        jgen.writeStringField("path", path.toString());
+        jgen.writeFieldName("value");
+        jgen.writeTree(value);
+        jgen.writeFieldName("oldValue");
+        jgen.writeTree(oldValue);
+        jgen.writeEndObject();
+    }
+
+    @Override
+    public final void serializeWithType(final JsonGenerator jgen,
+                                        final SerializerProvider provider, final TypeSerializer typeSer)
+            throws IOException, JsonProcessingException {
+        serialize(jgen, provider);
     }
 }

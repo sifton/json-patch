@@ -21,12 +21,7 @@ package com.github.fge.jsonpatch.diff;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.jsonpointer.JsonPointer;
-import com.github.fge.jsonpatch.AddOperation;
-import com.github.fge.jsonpatch.CopyOperation;
-import com.github.fge.jsonpatch.JsonPatchOperation;
-import com.github.fge.jsonpatch.MoveOperation;
-import com.github.fge.jsonpatch.RemoveOperation;
-import com.github.fge.jsonpatch.ReplaceOperation;
+import com.github.fge.jsonpatch.*;
 
 final class DiffOperation
 {
@@ -153,7 +148,7 @@ final class DiffOperation
             @Override
             JsonPatchOperation toOperation(final DiffOperation op)
             {
-                return new ReplaceOperation(op.from, op.value);
+                return new ReplaceOperation(op.from, op.value, op.oldValue);
             }
         },
         ;
